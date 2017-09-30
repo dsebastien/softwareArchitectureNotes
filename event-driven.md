@@ -61,6 +61,25 @@
     * can get complicated
     * if the application state schema changes, can the log still be fully replayed?
     * snapshots can help because then it's only needed to reapply events that came after that snapshot \(i.e., shorter period of time\)
+    * one advice: avoid business logic between events and their storage in the log \(otherwise versioning becomes an issue\)
+* what to store?
+  * input event
+    * buy 15 widgets \(captures business semantics\)
+  * internal event \(captures change in records\)
+    * buy 15 widgets
+    * price: $30
+    * shipping: $5
+    * total: $33
+  * output event
+    * 15 widgets total $33 \(captures observable change\)
+  * what to store then?
+    * not storing the input events mean we lose the initial intention
+    * not storing the internal event also loses information \(how the system reacted to the input event\)
+    * maybe store all events?
+
+## CQRS \(Command Query Responsibility Segregation\)
+
+* ...
 
 
 
