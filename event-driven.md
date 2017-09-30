@@ -48,6 +48,14 @@
   * memory image
     * keep the application state in memory
     * if the system crashes, quickly rebuild from the log \(or from snapshots\)
+* drawbacks
+  * unfamiliar
+  * external systems
+    * responses of external systems must also be put into events so that the full history is kept
+  * event schema
+  * identifiers
+  * asynchrony
+  * versioning
 
 
 
