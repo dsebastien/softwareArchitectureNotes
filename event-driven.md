@@ -56,7 +56,11 @@
   * identifiers
   * asynchrony
     * not necessarily needed with an event source system
+    * can be nice because it improved responsiveness, but adds complexity
   * versioning
+    * can get complicated
+    * if the application state schema changes, can the log still be fully replayed?
+    * snapshots can help because then it's only needed to reapply events that came after that snapshot \(i.e., shorter period of time\)
 
 
 
