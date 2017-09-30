@@ -79,11 +79,20 @@
 
 ## CQRS \(Command Query Responsibility Segregation\)
 
+* often problematic
 * separate components that read and write to the permanent store
-* separate models approach: often problematic
-  * two separate models \(actually separate components\)
-    * one to deal with updates
-    * one to deal with reads
-* 
+* two separate models \(actually separate components\)
+  * one to deal with writes \(updates\)
+  * one to deal with reads
+* commands either produces events, throws error or nothing happens
+
+* queries only return data, free from side effects
+
+* separated storage, optimized for each side
+
+* event updates consumed by all consumers
+
+* event handled only once: command
+
 
 
