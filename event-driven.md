@@ -55,6 +55,7 @@
   * event schema
   * identifiers
   * asynchrony
+    * not necessarily needed with an event source system
   * versioning
 
 
