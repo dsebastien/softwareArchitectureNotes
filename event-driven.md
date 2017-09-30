@@ -79,7 +79,11 @@
 
 ## CQRS \(Command Query Responsibility Segregation\)
 
-* ...
-
+* separate components that read and write to the permanent store
+* separate models approach: often problematic
+  * two separate models \(actually separate components\)
+    * one to deal with updates
+    * one to deal with reads
+* 
 
 
