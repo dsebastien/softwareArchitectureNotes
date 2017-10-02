@@ -60,6 +60,7 @@ From GraphQL specs: "GraphQL is unapologetically driven by the requirements of v
   * the schema can be written in GraphQL schema language
 
 * clients easily choose what they data get
+
   * they define the response
     * each call fetches exactly what is needed, no less, no more
   * including what they get after a mutation \(i.e., create, update or delete operation\)
