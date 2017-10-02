@@ -145,6 +145,8 @@ By default, all fields are nullable
   * solve the most important real problem that you have
     * problems drive priorities
   * think like the client
+  * yagni
+  * second time around problem
 
 
 
