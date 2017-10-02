@@ -43,6 +43,7 @@ From GraphQL specs: "GraphQL is unapologetically driven by the requirements of v
     * with REST: make 3 different calls \(1 towards each store's API\)
     * with GraphQL: make 1 call to the GraphQL server and let it take care of everything
 * strongly-typed schema with documentation
+
   * built-in discovery for GraphQL APIs!
     * query the \_\_schema meta-field
     * ```
@@ -57,6 +58,7 @@ From GraphQL specs: "GraphQL is unapologetically driven by the requirements of v
   * hides the details of the back-end architecture from the front-end
 
   * the schema can be written in GraphQL schema language
+
 * clients easily choose what they data get
   * they define the response
     * each call fetches exactly what is needed, no less, no more
