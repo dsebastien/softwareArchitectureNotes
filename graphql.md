@@ -2,9 +2,42 @@
 
 From GraphQL specs: "GraphQL is unapologetically driven by the requirements of views and the front-end engineers that write them."
 
+## What?
+
+* Interface Definition Language
+* language agnostic
+* public specification
+
+## Principles
+
+* product-centric
+* client-driven
+* strongly typed
+* introspective
+
+## Motivations
+
+* release cadence
+  * server can be released at will
+  * client app takes hours to days to release \(e.g., Android clients\)
+  * many app versions in the wild concurrently
+    * some clients won't want or won't be able to upgrade
+* latency
+  * reduce the number of network requests
+  * worst case: make many dependent requests and wait
+* bandwidth
+  * get ONLY what you need
+
+## Why not rest?
+
+* REST resources aligned with the exact needs of a view means NOK with REST \(back to ad-hoc RPC\)
+* time spent maintaining many versioned endpoints
+* client defining the response \(i.e., content negociation\) is rare in practice
+* REST is loosely specified
+
 ## Benefits
 
-* make multiple queries at once and 
+* make multiple queries at once
 * one API in hiding others if needed
   * useful analogy: "If you want to go and buy things from 3 different stores\)
     * with REST: make 3 different calls \(1 towards each store's API\)
@@ -21,7 +54,12 @@ From GraphQL specs: "GraphQL is unapologetically driven by the requirements of v
           }
       }
       ```
+  * hides the details of the back-end architecture from the front-end
+
+  * the schema can be written in GraphQL schema language
 * clients easily choose what they data get
+  * they define the response
+    * each call fetches exactly what is needed, no less, no more
   * including what they get after a mutation \(i.e., create, update or delete operation\)
   * responsibility swapped to the client side
 
@@ -30,6 +68,18 @@ From GraphQL specs: "GraphQL is unapologetically driven by the requirements of v
 * query
 * mutation
 * subscription
+
+## Field Types
+
+* String
+* Int
+* Float
+* ID: same as String
+* Boolean
+* Enum
+* Object
+
+By default, all fields are nullable
 
 ## Best practices
 
@@ -63,6 +113,12 @@ From GraphQL specs: "GraphQL is unapologetically driven by the requirements of v
 * version-less API
 
   * think about how the product will evolve in the future \(i.e., will my API still make sense in the next iteration?\)
+  * no need to version the endpoint
+  * clients use types in different ways
+  * clients can define their own fragments \(i.e., subsets of specific types\)
+  * adding fields to types is cheap
+  * breaking changes
+    * cannot change the high level types!
 
 * thin interface
 
@@ -82,6 +138,7 @@ From GraphQL specs: "GraphQL is unapologetically driven by the requirements of v
   * what if the implementation changes?
 
 * principles & lessons
+
   * solve the most important real problem that you have
     * problems drive priorities
   * think like the client
