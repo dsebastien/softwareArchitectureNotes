@@ -23,6 +23,12 @@
   * including what they get after a mutation \(i.e., create, update or delete operation\)
   * responsibility swapped to the client side
 
+## Operation types
+
+* query
+* mutation
+* subscription
+
 ## Best practices
 
 * naming matters: self-documenting names
@@ -62,8 +68,10 @@
   * do it OUTSIDE!
 
 * hide implementation details
+
   * what if the implementation changes?
     * does the API continue to make sense when that happens?
+
 * basic questions
   * would a new engineer understand this?
   * what might v2 look like?
