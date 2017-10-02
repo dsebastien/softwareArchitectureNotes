@@ -1,5 +1,7 @@
 # GraphQL
 
+From GraphQL specs: "GraphQL is unapologetically driven by the requirements of views and the front-end engineers that write them."
+
 ## Benefits
 
 * make multiple queries at once and 
@@ -73,10 +75,12 @@
     * does the API continue to make sense when that happens?
 
 * basic questions
+
   * would a new engineer understand this?
   * what might v2 look like?
   * will this work for all future clients?
   * what if the implementation changes?
+
 * principles & lessons
   * solve the most important real problem that you have
     * problems drive priorities
