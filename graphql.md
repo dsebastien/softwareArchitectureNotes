@@ -34,6 +34,7 @@ From GraphQL specs: "GraphQL is unapologetically driven by the requirements of v
 * time spent maintaining many versioned endpoints
 * client defining the response \(i.e., content negociation\) is rare in practice
 * REST is loosely specified
+* comparison / analysis: https://apihandyman.io/and-graphql-for-all-a-few-things-to-think-about-before-blindly-dumping-rest-for-graphql/
 
 ## Benefits
 
