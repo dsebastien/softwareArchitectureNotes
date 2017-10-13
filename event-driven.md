@@ -164,7 +164,12 @@ Microservice architecture with at least the following components:
 * a platform-wide "back-end event mediator"
   * responsible for orchestration between event publishers and subscribers
 * a platform-wide "back-end event manager"
-  * responsible for long-term storage \(event sourcing and management of snapshots\)
+  * responsible for long-term storage \(event sourcing and creation & management of snapshots\)
+
+Easy to add analytics
+
+* real time: subscribe to topics
+* delayed: leverage the long-term storage & snapshots
 
 #### Clients
 
@@ -238,6 +243,13 @@ Flow in this case: Server Event Mediator -&gt; Service Layer -&gt; ...
 * clients: send events to the platform-wide event mediator or to another specific microservice instead?
   * ideally clients should have a single interlocutor \(graphql idea\) but that's creating a spof
     * related question about subscriptions
+* how to handle subscriptions to events?
+  * from microservices
+  * from clients
+* how to handle up-to-dateness of clients?
+  * numbering of all events to be able to clearly reconstruct a story and know exactly at which point in time each client currently is
+* leverage blockchains? tamper-proofness / auditing / ...
+* auditing: what information to keep for audit trails?
 
 # Links
 
