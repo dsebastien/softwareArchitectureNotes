@@ -42,10 +42,6 @@ Define interactions and handles state changes through the production and reactio
     * add security, compliance, etc
     * provide optimizations & load balancing
 
-## Event design
-
-With such an architecture, events are front and center. They must be carefully designed
-
 ## High level approaches
 
 ### Event Notification System
@@ -140,6 +136,28 @@ With such an architecture, events are front and center. They must be carefully d
 * event updates consumed by all consumers
 
 * event handled only once: command
+
+## Event design and catalog
+
+With such an architecture, events are front and center. They must be carefully designed and put in a detailed _event catalog_.
+
+The catalog should allow to answer the following questions for each event type:
+
+* what is the unique name of the event?
+* what is the meaning/utility of the event?
+* which components publish that event and when/why?
+* what components may require the ability to subscribe/react to the event?
+* what data/metadata must be included with this event type?
+  * what are the data formats to use?
+* security information
+  * who can publish that event \(roles / attributes / constraints\)
+
+## Runtime concerns
+
+* eventual consistency \(!\)
+* error-handling with decoupled events
+* offline subscribers
+* event mediation
 
 ## Design idea for a platform using Event Sourcing
 
