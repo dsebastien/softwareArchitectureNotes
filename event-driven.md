@@ -146,16 +146,20 @@ With such an architecture, events are front and center. They must be carefully d
 Components:
 
 * back-end
-  * a global highly available message broker with streaming support \(e.g., Kafka\)
+
+  * a platform-wide \(i.e., global\) highly available message broker _with_ streaming support \(e.g., Kafka\)
   * a server event mediator embedded in each back-end microservice
     * leverage reactive programming \(e.g., Reactor\)
-  * a global back-end event mediator
+  * a platform-wide back-end event mediator
+
     * responsible for orchestration between event publishers and subscribers
 
-    * a global back-end event storage manager
+  * a platform-wide back-end event manager
 
-  * responsible for long-term storage \(event sourcing and management of snapshots\)
+    * responsible for long-term storage \(event sourcing and management of snapshots\)
+
 * clients
+
   * a client event mediator embedded in each client
     * leverage reactive programming \(e.g., RxJS\)
   * an event publisher embedded in each client
@@ -164,7 +168,12 @@ Components:
 
 Flows of events between components
 
-* event publishers -&gt; send events -&gt; event mediator
+* clients
+  * communicate directly with 1-n back-ends
+    * through REST and/or GraphQL calls
+      * when doing so they trigger indirectly the creation of events
+* each contacted back-end hit by calls decides when to generate events for the rest of the platform
+  * 
 * event mediators: listens/pushes to topics and to subscribers
 
 Client-side Web applications
@@ -206,9 +215,13 @@ With a design like this:
   * handle GraphQL or REST requests
     * and publish relevant events to the Server Event Mediator through their Kafka Client
 
+Q: where's the watchdog \(e.g., deciding who can do what\)
+
+Q: structure of the 
+
 # Links
 
-* https://en.wikipedia.org/wiki/Publish–subscribe\_pattern
+* [https://en.wikipedia.org/wiki/Publish–subscribe\_pattern](https://en.wikipedia.org/wiki/Publish–subscribe_pattern)
 
 
 
