@@ -17,7 +17,37 @@ Example use cases:
 
 Define interactions and handles state changes through the production and reaction to events using publishers, subscribers and event mediators.
 
-## Event Notification System
+## Main concepts
+
+* events
+  * represents a change in state that is relevant in the system
+  * should include or reference enough context and metadata so that subscribers receiving the events 
+* event publisher \(aka generators, sources, emitters\)
+  * detects state changes
+  * gathers the necessary information to describe the event
+  * transfers the event to the event mediator
+  * should have no knowledge, dependencies or expectations on event subscribers
+* event subscriber \(aka handlers, sinks, consumers\)
+  * register with an event mediator to receive an alert when the the mediator receives a particular event type \(aka event "topic"\)
+  * effect the necessary business logic and actions for the rest of the system to react to the event
+
+## Design ideas
+
+* client
+  * smart components &lt;-&gt; services &lt;-&gt; web worker &lt;-&gt; Client Event Mediator &lt;-&gt; WebSocket
+    * subscribe to event sources through the event mediator
+      * react to received events
+    * publish events
+* back-end
+  * microservice A
+    \* 
+  * * subscribe to event sources through the event mediator
+  * microservice B
+  * event mediator
+
+## High level approaches
+
+### Event Notification System
 
 * goals & benefits
   * decouple systems /modules & reverse dependencies
@@ -31,7 +61,7 @@ Define interactions and handles state changes through the production and reactio
 
   * only solution: watch the events and see what happens, looking at the flow of messages through the system
 
-## Event-Carried State Transfer
+### Event-Carried State Transfer
 
 * less often used
 * events carry all the data that downstream systems might need
@@ -44,7 +74,7 @@ Define interactions and handles state changes through the production and reactio
   * duplication of data
   * eventual consistency
 
-## Event Sourcing
+### Event Sourcing
 
 * events created for everything then processed
 * events persisted in a data store
@@ -93,7 +123,7 @@ Define interactions and handles state changes through the production and reactio
     * not storing the internal event also loses information \(how the system reacted to the input event\)
     * maybe store all events?
 
-## CQRS \(Command Query Responsibility Segregation\)
+### CQRS \(Command Query Responsibility Segregation\)
 
 * often problematic
 * separate components that read and write to the permanent store
@@ -110,24 +140,7 @@ Define interactions and handles state changes through the production and reactio
 
 * event handled only once: command
 
-## Definitions
-
-* events: an event represents a change in state that is relevant in the system
-  * should include or reference enough context and metadata so that subscribers receiving the events 
-
-## Design ideas
-
-* client
-  * smart components &lt;-&gt; services &lt;-&gt; web worker &lt;-&gt; Client Event Mediator &lt;-&gt; WebSocket
-    * subscribe to event sources through the event mediator
-      * react to received events
-    * publish events
-* back-end
-  * microservice A
-    * 
-  * * subscribe to event sources through the event mediator
-  * microservice B
-  * event mediator
+## 
 
 
 
