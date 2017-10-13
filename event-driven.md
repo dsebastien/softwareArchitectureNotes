@@ -110,5 +110,24 @@ Define interactions and handles state changes through the production and reactio
 
 * event handled only once: command
 
+## Definitions
+
+* events: an event represents a change in state that is relevant in the system
+  * should include or reference enough context and metadata so that subscribers receiving the events 
+
+## Design ideas
+
+* client
+  * smart components &lt;-&gt; services &lt;-&gt; web worker &lt;-&gt; Client Event Mediator &lt;-&gt; WebSocket
+    * subscribe to event sources through the event mediator
+      * react to received events
+    * publish events
+* back-end
+  * microservice A
+    * 
+  * * subscribe to event sources through the event mediator
+  * microservice B
+  * event mediator
+
 
 
