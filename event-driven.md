@@ -28,8 +28,12 @@ Define interactions and handles state changes through the production and reactio
   * transfers the event to the event mediator
   * should have no knowledge, dependencies or expectations on event subscribers
 * event subscriber \(aka handlers, sinks, consumers\)
-  * register with an event mediator to receive an alert when the the mediator receives a particular event type \(aka event "topic"\)
-  * effect the necessary business logic and actions for the rest of the system to react to the event
+  * register with an event mediator to receive an alert when the mediator receives a particular event type \(aka event "topic"\)
+    * i.e., please push values to me regarding "x"
+  * execute the necessary business logic and actions for the rest of the system to react to the event
+  * have no dependencies or expectations on the event sources
+* event mediator
+  * provide the mechanism to transfer events from the publishers to the subscribers
 
 ## Design ideas
 
