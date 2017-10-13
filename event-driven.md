@@ -1,10 +1,26 @@
-# Event-Driven Architecture
+# Event-Driven Architecture \(EDA\)
+
+## About
+
+EDA is an architecture paradigm centered around reacting to event notifications.
+
+Can help create scalable and highly response applications but is more complex and requires a different mindset during development.
+
+Example use cases:
+
+* chat sessions
+* social interactions
+* games
+* stock tickers
+* monitoring
+* dynamic data visualizations
+
+Define interactions and handles state changes through the production and reaction to events using publishers, subscribers and event mediators.
 
 ## Event Notification System
 
 * goals & benefits
-  * reverse dependencies
-  * decouple systems /modules
+  * decouple systems /modules & reverse dependencies
   * turn the _change_ into a first-class element
 * events vs commands
   * events: "Something has happened; I don't know or care what should/needs to happen next."
