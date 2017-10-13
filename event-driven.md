@@ -143,6 +143,8 @@ With such an architecture, events are front and center. They must be carefully d
 
 ## Design idea for a platform using Event Sourcing
 
+Goal: design a highly available, horizontally scalable with loose coupling between the components.
+
 MUST: leverage functional reactive programming \(FRP\). Java/Kotin: Reactor, JS/TS: RxJS...
 
 ### Components
@@ -154,12 +156,14 @@ Microservice architecture with at least the following components:
 * a platform-wide \(i.e., global\) highly available message broker _with_ streaming support \(e.g., Kafka\)
   * all relevant platform events transit through it
 * 1-n microservices
-  * bounded context
-* a server event mediator embedded in each microservice
+  * bounded context \(e.g., payments subsystem, user profile subsystem, ...\)
+* a "server event mediator" embedded in each microservice
   * dispatches events within the microservice for consumption/reaction
-* a platform-wide back-end event mediator
+* a "server event publisher" embedded in each microservice
+  * publishes events to the message broker
+* a platform-wide "back-end event mediator"
   * responsible for orchestration between event publishers and subscribers
-* a platform-wide back-end event manager
+* a platform-wide "back-end event manager"
   * responsible for long-term storage \(event sourcing and management of snapshots\)
 
 #### Clients
@@ -169,64 +173,71 @@ Microservice architecture with at least the following components:
 * an event publisher embedded in each client
   * e.g., GraphQL calls or WebSocket
 
-### Flow of events between components
-
-#### Clients
-
-Communicate directly with 1-n back-ends through REST and/or GraphQL calls \(using queries & mutations\)
-
-* when doing so they trigger \(directly or indirectly\) the creation of events on the back-end platform
-* each contacted back-end hit by calls decides when to generate events for the rest of the platform
+### Client Layers
 
 If we take the example of a Web or node.js based application, the structure could be as follows.
-
-Layers:
 
 * UI: dumb + smart components and their controllers
 * Services
   * hold business logic
   * interact with lower layers
-* Client Event Mediator: RxJS subscriptions to queries made through services/repositories
 * Repositories
   * REST and/or GraphQL client
   * leverage WebSockets and/or Server-Sent Events
 
-#### Platform
+### Platform microservices layers
 
-Clients may 
+As stated, the whole platform will consist of 1-n microservices.
 
-* microservice A
+Let's consider the layers of a typical Java microservice:
 
-  * \(client request \| scheduler &lt;-&gt; API &lt;-&gt;\) service layer &lt;-&gt; Kafka client &lt;-&gt; Server Event Mediator 
-    * subscribe to event sources through the event mediator
-    * react to received events: Kafka client -&gt; service layer \(listeners\)
-    * publish events: services -&gt; Kafka client -&gt; Server Event Mediator\)
-  * GraphQL and/or RESTful server
+* GraphQL and/or REST layer
+* Services
+  * hold business logic
+  * take care of transaction management
+  * take care of authorization
+  * ...
+* Repositories
+  * handle interactions with data sources/stores
 
-* microservice B
+### Flow of events between components
 
-  * idem A
+#### Clients
 
-* Server Event Mediator
+Communicate directly with 1-n back-ends through REST and/or GraphQL calls \(using queries & mutations\).
 
-  * also a microservice
-  * subscribe to topics
-  * GraphQL and/or RESTful server
+When doing so they trigger \(directly or indirectly\) the creation of events on the back-end platform.
 
-With a design like this:
+In some cases clients will directly create the events and publish them. Each contacted back-end hit by calls decides when to generate events for the rest of the platform \(cfr next section\).
 
-* the client-side Web applications interact with 1-n microservices through GraphQL or REST
-  * perform queries & mutations
-  * subscriptions to event streams are handled by the Server Event Mediator
-  * event are received by the Client Event Mediator and forwarded to interested components of the client-side app
-  * subscriptions and events and handled through WebSocket or Server-Sent Events
-* the microservices
-  * handle GraphQL or REST requests
-    * and publish relevant events to the Server Event Mediator through their Kafka Client
+When clients receive events for topics they've subscribed to, their Client Event Mediator will take care of reactively handling the event.
 
-Q: where's the watchdog \(e.g., deciding who can do what\)
+Flow in that case: Client Event Mediator -&gt; Service Layer \| other internal subscribers
 
-Q: structure of the
+#### Platform microservices
+
+Activity of microservices may be triggered by different means: client requests \(e.g., GraphQL queries and/or REST calls\), scheduled activities \(in-app triggers, external triggers, ...\), event notifications, ...
+
+During activities \(e.g., client has submitted new data\), the microservice's service layer decides if events need to be created. When it is the case, the event \(value-object\) is created and passed to the Server Event Publisher which takes care of sending the event to the message broker \(e.g., using the Kafka client\).
+
+Flow in this case: Service Layer -&gt; Server Event Publisher -&gt; Message Broker
+
+Microservices may also subscribe to some topics. When it receives events, its Server Event Mediator will take care of reactively handling these \(i.e., letting them flow for consumption\).
+
+Flow in this case: Server Event Mediator -&gt; Service Layer -&gt; ...
+
+### Open Questions / TODO
+
+* add a chaos monkey component: killer in the house
+* design of the events hierarchy?
+* design of the events structure?
+* storage of the events?
+* evolution of the events and associated payloads?
+* overlap/separation between platform events and events clients may/should know about?
+* microservices: send events to kafka directly or go through the platform-wide event mediator?
+* clients: send events to the platform-wide event mediator or to another specific microservice instead?
+  * ideally clients should have a single interlocutor \(graphql idea\) but that's creating a spof
+    * related question about subscriptions
 
 # Links
 
