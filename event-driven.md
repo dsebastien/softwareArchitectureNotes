@@ -46,23 +46,43 @@ Define interactions and handles state changes through the production and reactio
 
 event publishers \(n applications\) -&gt; send events -&gt; event mediators \(e.g., kafka\) \(listens/pushes to topics\) -&gt; push to subscribers
 
-* client-side
-  * smart components &lt;-&gt; service layer &lt;-&gt; web workers &lt;-&gt; Client Event Mediator &lt;-&gt; WebSocket
-    * subscribe to event sources through the event mediator
-    * react to received events: WebSocket -&gt; Client Event Mediator -&gt; services
-    * publish events: services -&gt; Client Event Mediator -&gt; WebSocket
-* back-end platform
-  * microservice A
-    * \(client request \| scheduler &lt;-&gt; API &lt;-&gt;\) service layer &lt;-&gt; Kafka client &lt;-&gt; Server Event Mediator 
-      * subscribe to event sources through the event mediator
-      * react to received events: Kafka client -&gt; service layer \(listeners\)
-      * publish events: services -&gt; Kafka client -&gt; Server Event Mediator\)
+Client-side Web applications
 
-  * microservice B
-    * ...
-  * Server Event Mediator
-    * also a microservice
-    * subscribe to topics
+* smart components &lt;-&gt; service layer &lt;-&gt; web workers &lt;-&gt; Client Event Mediator &lt;-&gt; WebSocket and/or Server-Sent Events
+  * subscribe to event sources through the event mediator
+  * react to received events: WebSocket -&gt; Client Event Mediator -&gt; services
+  * publish events: services -&gt; Client Event Mediator -&gt; WebSocket
+  * GraphQL and/or RESTful client
+
+Server-side platform
+
+* microservice A
+
+  * \(client request \| scheduler &lt;-&gt; API &lt;-&gt;\) service layer &lt;-&gt; Kafka client &lt;-&gt; Server Event Mediator 
+    * subscribe to event sources through the event mediator
+    * react to received events: Kafka client -&gt; service layer \(listeners\)
+    * publish events: services -&gt; Kafka client -&gt; Server Event Mediator\)
+  * GraphQL and/or RESTful server
+
+* microservice B
+
+  * idem A
+
+* Server Event Mediator
+  * also a microservice
+  * subscribe to topics
+  * GraphQL and/or RESTful server
+
+With a design like this:
+
+* the client-side Web applications interact with 1-n microservices through GraphQL or REST
+  * perform queries & mutations
+  * subscriptions to event streams are handled by the Server Event Mediator
+  * event are received by the Client Event Mediator and forwarded to interested components of the client-side app
+  * subscriptions and events and handled through WebSocket or Server-Sent Events
+* the microservices
+  * handle GraphQL or REST requests
+    * and publish relevant events to the Server Event Mediator through their Kafka Client
 
 ## High level approaches
 
