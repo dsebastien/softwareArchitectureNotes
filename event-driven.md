@@ -34,20 +34,35 @@ Define interactions and handles state changes through the production and reactio
   * have no dependencies or expectations on the event sources
 * event mediator
   * provide the mechanism to transfer events from the publishers to the subscribers
+  * allows subscribers to register for event types
+  * receives events from publishers and alerts the relevant subscribers
+    * asynchronously
+  * may act as a simple pass-through or play a more active role
+    * aggregate events
+    * add security, compliance, etc
+    * provide optimizations & load balancing
 
-## Design ideas
+## Design ideas with Kafka
 
-* client
-  * smart components &lt;-&gt; services &lt;-&gt; web worker &lt;-&gt; Client Event Mediator &lt;-&gt; WebSocket
+event publishers \(n applications\) -&gt; send events -&gt; event mediators \(e.g., kafka\) \(listens/pushes to topics\) -&gt; push to subscribers
+
+* client-side
+  * smart components &lt;-&gt; service layer &lt;-&gt; web workers &lt;-&gt; Client Event Mediator &lt;-&gt; WebSocket
     * subscribe to event sources through the event mediator
-      * react to received events
-    * publish events
-* back-end
+    * react to received events: WebSocket -&gt; Client Event Mediator -&gt; services
+    * publish events: services -&gt; Client Event Mediator -&gt; WebSocket
+* back-end platform
   * microservice A
-    \* 
-  * * subscribe to event sources through the event mediator
+    * \(client request \| scheduler &lt;-&gt; API &lt;-&gt;\) service layer &lt;-&gt; Kafka client &lt;-&gt; Server Event Mediator 
+      * subscribe to event sources through the event mediator
+      * react to received events: Kafka client -&gt; service layer \(listeners\)
+      * publish events: services -&gt; Kafka client -&gt; Server Event Mediator\)
+
   * microservice B
-  * event mediator
+    * ...
+  * Server Event Mediator
+    * also a microservice
+    * subscribe to topics
 
 ## High level approaches
 
