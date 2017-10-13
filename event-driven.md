@@ -143,48 +143,57 @@ With such an architecture, events are front and center. They must be carefully d
 
 ## Design idea for a platform using Event Sourcing
 
-Components:
+MUST: leverage functional reactive programming \(FRP\). Java/Kotin: Reactor, JS/TS: RxJS...
 
-* back-end
+### Components
 
-  * a platform-wide \(i.e., global\) highly available message broker _with_ streaming support \(e.g., Kafka\)
-  * a server event mediator embedded in each back-end microservice
-    * leverage reactive programming \(e.g., Reactor\)
-  * a platform-wide back-end event mediator
+#### Back-end
 
-    * responsible for orchestration between event publishers and subscribers
+Microservice architecture with at least the following components:
 
-  * a platform-wide back-end event manager
+* a platform-wide \(i.e., global\) highly available message broker _with_ streaming support \(e.g., Kafka\)
+  * all relevant platform events transit through it
+* 1-n microservices
+  * bounded context
+* a server event mediator embedded in each microservice
+  * dispatches events within the microservice for consumption/reaction
+* a platform-wide back-end event mediator
+  * responsible for orchestration between event publishers and subscribers
+* a platform-wide back-end event manager
+  * responsible for long-term storage \(event sourcing and management of snapshots\)
 
-    * responsible for long-term storage \(event sourcing and management of snapshots\)
+#### Clients
 
-* clients
+* a client event mediator embedded in each client
+  * dispatches events within the client for consumption/reaction
+* an event publisher embedded in each client
+  * e.g., GraphQL calls or WebSocket
 
-  * a client event mediator embedded in each client
-    * leverage reactive programming \(e.g., RxJS\)
-  * an event publisher embedded in each client
+### Flow of events between components
 
-    * e.g., GraphQL calls or WebSocket
+#### Clients
 
-Flows of events between components
+Communicate directly with 1-n back-ends through REST and/or GraphQL calls \(using queries & mutations\)
 
-* clients
-  * communicate directly with 1-n back-ends
-    * through REST and/or GraphQL calls
-      * when doing so they trigger indirectly the creation of events
+* when doing so they trigger \(directly or indirectly\) the creation of events on the back-end platform
 * each contacted back-end hit by calls decides when to generate events for the rest of the platform
-  * 
-* event mediators: listens/pushes to topics and to subscribers
 
-Client-side Web applications
+If we take the example of a Web or node.js based application, the structure could be as follows.
 
-* smart components &lt;-&gt; service layer &lt;-&gt; web workers &lt;-&gt; Client Event Mediator &lt;-&gt; WebSocket and/or Server-Sent Events
-  * subscribe to event sources through the event mediator
-  * react to received events: WebSocket -&gt; Client Event Mediator -&gt; services \(e.g., using RxJS\)
-  * publish events: services -&gt; Client Event Mediator \(e.g., using WebSocket\)
-  * GraphQL and/or RESTful client
+Layers:
 
-Server-side platform
+* UI: dumb + smart components and their controllers
+* Services
+  * hold business logic
+  * interact with lower layers
+* Client Event Mediator: RxJS subscriptions to queries made through services/repositories
+* Repositories
+  * REST and/or GraphQL client
+  * leverage WebSockets and/or Server-Sent Events
+
+#### Platform
+
+Clients may 
 
 * microservice A
 
@@ -217,7 +226,7 @@ With a design like this:
 
 Q: where's the watchdog \(e.g., deciding who can do what\)
 
-Q: structure of the 
+Q: structure of the
 
 # Links
 
