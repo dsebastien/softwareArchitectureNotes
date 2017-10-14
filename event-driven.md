@@ -52,6 +52,7 @@ Define interactions and handles state changes through the production and reactio
 * events vs commands
   * events: "Something has happened; I don't know or care what should/needs to happen next."
   * commands: "Something needs to happen, go do it!"
+  * events should NOT be treated as commands: otherwise it will result in a poor implementation of EDA and an unpredictable system
 * issue
 
   * no global view of what's happening within the system
@@ -145,18 +146,28 @@ The catalog should allow to answer the following questions for each event type:
 
 * what is the unique name of the event?
 * what is the meaning/utility of the event?
+* what is the name of the corresponding topic? 
 * which components publish that event and when/why?
 * what components may require the ability to subscribe/react to the event?
 * what data/metadata must be included with this event type?
   * what are the data formats to use?
+* how to detect state changes for this event type?
+  * ensure there's a unique identifier associated with each event \(uuid\)
+  * ensure there's a unique sequential number associated with each event \(for ordering\)
 * security information
   * who can publish that event \(roles / attributes / constraints\)
 
 ## Runtime concerns
 
 * eventual consistency \(!\)
+  * avoid dependencies on which order subscribers execute
+  * identify events that must happen in a specific sequence and ensure to have an ordering mechanism in place for those
+  * tolerate inconsistencies, knowing that eventually the system will be consistent
 * error-handling with decoupled events
+  * cannot rollback events \(immutable!\)
+  * create "failure" events and react to that to fix issues
 * offline subscribers
+  * take advantage of event sourcing \(i.e., reapply event history / snapshots\) to put back disconnected/offline clients to an up-to-date / correct state
 * event mediation
 
 ## Design idea for a platform using Event Sourcing
