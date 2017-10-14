@@ -202,9 +202,9 @@ Easy to add analytics
 
 #### Clients
 
-* a client event mediator embedded in each client
+* a "client event mediator" embedded in each client
   * dispatches events within the client for consumption/reaction
-* an event publisher embedded in each client
+* a "client event publisher" embedded in each client
   * e.g., GraphQL calls or WebSocket
 
 ### Client Layers
@@ -242,7 +242,7 @@ Communicate directly with 1-n back-ends through REST and/or GraphQL calls \(usin
 
 When doing so they trigger \(directly or indirectly\) the creation of events on the back-end platform.
 
-In some cases clients will directly create the events and publish them. Each contacted back-end hit by calls decides when to generate events for the rest of the platform \(cfr next section\).
+In some cases clients will directly create the events and publish them using the Client Event Publisher. Each contacted back-end hit by calls decides when to generate events for the rest of the platform \(cfr next section\).
 
 When clients receive events for topics they've subscribed to, their Client Event Mediator will take care of reactively handling the event.
 
@@ -262,23 +262,21 @@ Flow in this case: Server Event Mediator -&gt; Service Layer -&gt; ...
 
 ### Open Questions / TODO
 
+* expand the roles of the mediator?
+  * register event subscriptions
+  * handle publishing events
 * add a chaos monkey component: killer in the house
-* design of the events hierarchy?
-* design of the events structure?
-* storage of the events?
 * evolution of the events and associated payloads?
 * overlap/separation between platform events and events clients may/should know about?
 * microservices: send events to kafka directly or go through the platform-wide event mediator?
 * clients: send events to the platform-wide event mediator or to another specific microservice instead?
-  * ideally clients should have a single interlocutor \(graphql idea\) but that's creating a spof
-    * related question about subscriptions
+* ideally clients should have a single interlocutor \(graphql idea\) but that's creating a spof
+  * related question about subscriptions
 * how to handle subscriptions to events?
   * from microservices
-  * from clients
-* how to handle up-to-dateness of clients?
-  * numbering of all events to be able to clearly reconstruct a story and know exactly at which point in time each client currently is
+  * from clientshow to handle up-to-dateness of clients?
 * leverage blockchains? tamper-proofness / auditing / ...
-* auditing: what information to keep for audit trails?
+* auditing: what information to keep along with events for audit trails?
 
 # Links
 
