@@ -20,7 +20,7 @@ Define interactions and handles state changes through the production and reactio
 ## Main concepts
 
 * events
-  * represents a change in state that is relevant in the system
+  * represent a change in state that is relevant in the system
   * should include or reference enough context and metadata so that subscribers receiving the events 
 * event publisher \(aka generators, sources, emitters\)
   * detects state changes
@@ -74,6 +74,7 @@ Define interactions and handles state changes through the production and reactio
 
 ### Event Sourcing
 
+* when all changes to a system are caused by events
 * events created for everything then processed
 * events persisted in a data store
 * application state = current state
