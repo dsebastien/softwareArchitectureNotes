@@ -53,6 +53,9 @@ Define interactions and handles state changes through the production and reactio
   * events: "Something has happened; I don't know or care what should/needs to happen next."
   * commands: "Something needs to happen, go do it!"
   * events should NOT be treated as commands: otherwise it will result in a poor implementation of EDA and an unpredictable system
+  * commands should not be stored
+    * command sourcing is often a bad practice
+    * there's not guarantee that replaying commands will result in the same events!
 * issue
 
   * no global view of what's happening within the system
@@ -139,6 +142,8 @@ Define interactions and handles state changes through the production and reactio
 
 * event handled only once: command
 
+* there's always a contract
+
 ## Event design and catalog
 
 With such an architecture, events are front and center. They must be carefully designed and put in a detailed _event catalog_.
@@ -219,6 +224,9 @@ If we take the example of a Web or node.js based application, the structure coul
 * Repositories
   * REST and/or GraphQL client
   * leverage WebSockets and/or Server-Sent Events
+* Event Handlers
+  * contains the event mediator
+  * contains the event publisher
 
 ### Platform microservices layers
 
@@ -260,6 +268,16 @@ Flow in this case: Service Layer -&gt; Server Event Publisher -&gt; Message Brok
 Microservices may also subscribe to some topics. When it receives events, its Server Event Mediator will take care of reactively handling these \(i.e., letting them flow for consumption\).
 
 Flow in this case: Server Event Mediator -&gt; Service Layer -&gt; ...
+
+### State Machines
+
+When clients interact with the back-end \(whatever microservice\), they issue "commands".
+
+When a command is received, it triggers the creation of an event. That event is stored and processed.
+
+When we process each event, the concerned parts of the system may change their "state" we can represent all the possible state of some sub-system as a Finite State Machine \(FSM\). Basically, events are what allows the FSM to go from a state to another.
+
+The benefit if we use FSMs is that once an event occurs, we can pass it to the FSM and see if it changed its state. Once the state changes, new events are generated and dispatched. Another benefit is that FSMs are easy to describe, encapsulate the logic, ...
 
 ### Open Questions / TODO
 
