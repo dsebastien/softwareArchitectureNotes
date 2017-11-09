@@ -17,6 +17,18 @@ Example use cases:
 
 Define interactions and handles state changes through the production and reaction to events using publishers, subscribers and event mediators.
 
+With EDA we consider that the events are the main source of truth \(thus are first-class citizen in the system\). The analogy can easily be made with the real world:
+
+* people try to make things happen by sending orders around them
+  * issue a command like: "Order a pizza"
+* other people and the world in general evaluates those commands and either accepts or rejects those
+  * * an event is created: "Pizza ordered" containing all the details \(e.g., large, 4 cheese types, to deliver to ...\)
+    * if it were rejected we could have "Pizza order rejected" ...
+* once the order is accepted, the pizza can be prepared and delivered
+  * in our system then we get additional events like "Pizza prepared", "Pizza delivered", ...
+
+With EDA, events are kept preciously \(cfr Event Sourcing below\) as they represent everything that has ever actually happened in the system.
+
 ## Main concepts
 
 * events
@@ -152,7 +164,7 @@ The catalog should allow to answer the following questions for each event type:
 
 * what is the unique name of the event?
 * what is the meaning/utility of the event?
-* what is the name of the corresponding topic? 
+* what is the name of the corresponding topic?
 * which components publish that event and when/why?
 * what components may require the ability to subscribe/react to the event?
 * what data/metadata must be included with this event type?
