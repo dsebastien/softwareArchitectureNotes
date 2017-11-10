@@ -17,11 +17,14 @@ Example use cases:
 
 Define interactions and handles state changes through the production and reaction to events using publishers, subscribers and event mediators.
 
+Heavily relies on Domain-Driven Design \(DDD\) principles, thus read this first: [https://www.gitbook.com/book/dsebastien/domain-driven-design-notes](https://www.gitbook.com/book/dsebastien/domain-driven-design-notes)
+
 ## Main concepts
 
 * events
-  * represent a change in state that is relevant in the system
-  * should include or reference enough context and metadata so that subscribers receiving the events 
+  * represent a change _that has already occurred_ in the system
+  * should include or reference enough context and metadata so that subscribers receiving the events
+  * immutable \(just like the past, you can't change it\)
 * event publisher \(aka generators, sources, emitters\)
   * detects state changes
   * gathers the necessary information to describe the event
@@ -41,6 +44,21 @@ Define interactions and handles state changes through the production and reactio
     * aggregate events
     * add security, compliance, etc
     * provide optimizations & load balancing
+* commands
+  * request to perform something in the system
+  * may be rejected
+
+  * immutable \(a request is a request, it shouldn't be changed\)
+* command handlers
+  * validate the commands
+  * when allowed/accepted, commands modify the system state and 0..n events are be generated \(1 is common\)
+  * command handlers contain logic \(e.g., validation, security, auditing, ...\)
+* saga \(aka process manager\)
+  * component that reacts to domain events in a cross-aggregate, eventually consistent manner \(time can also be a trigger\)
+  * sagas are sometimes purely reactive and sometime represent workflows
+  * a saga is a state machine driven forward by incoming events \(which may come from different aggregates\)
+    * some states will have side-effects \(e.g., sending commands, talking to external Web Services, sending e-mails, ...\)
+  * sagas are doing things that individual aggregates can't do
 
 ## High level approaches
 
@@ -88,7 +106,8 @@ Define interactions and handles state changes through the production and reactio
   * ledge in a financial system
 * benefits
   * audit
-    * the log contains everything that's ever happened
+    * the log contains everything that's ever happened in the system \(true history\)
+    * provides natural audit and traceability
   * debugging
     * take a copy of the system, feed it with events and observe what happens
     * time travel debugging
@@ -96,6 +115,10 @@ Define interactions and handles state changes through the production and reactio
   * memory image
     * keep the application state in memory
     * if the system crashes, quickly rebuild from the log \(or from snapshots\)
+  * ease to extend the system naturally
+    * since all events are kept, it's it's easy to exploit them
+  * persistence of events is very easy, straightforward and efficient \(append-only\)
+  * testing is clear: use exclusively the commands, events and exceptions
 * drawbacks
   * unfamiliar
   * external systems
@@ -110,8 +133,10 @@ Define interactions and handles state changes through the production and reactio
     * if the application state schema changes, can the log still be fully replayed?
     * snapshots can help because then it's only needed to reapply events that came after that snapshot \(i.e., shorter period of time\)
     * one advice: avoid business logic between events and their storage in the log \(otherwise versioning becomes an issue\)
+    * upgrading events can be done by both the write and read sides which can upgrade events
+      * if an event can't be upgraded it probably means that it's a completely different event
 * what to store?
-  * input event
+  * commands \(aka input event\)
     * buy 15 widgets \(captures business semantics\)
   * internal event \(captures change in records\)
     * buy 15 widgets
@@ -124,25 +149,50 @@ Define interactions and handles state changes through the production and reactio
     * not storing the input events mean we lose the initial intention
     * not storing the internal event also loses information \(how the system reacted to the input event\)
     * maybe store all events?
+  * commands can be logged but don't belong in the event store
+* snapshots
+
+  * optimization where a snapshot of the aggregate's state is saved in the event queue every so often so that the system can start from the snapshot instead of from scratch \(can speed things up; e.g., reduce time to recover\)
+
+  * usually better to start without snapshots and adding it later if needed
+
+* interoperability & compression
+
+  * events may be compressed using libraries like Google's Protocol Buffers or Apache Avro
+
+  * using Protocol Buffers or Avro also help with interoperability
 
 ### CQRS \(Command Query Responsibility Segregation\)
 
-* often problematic
-* separate components that read and write to the permanent store
-* two separate models \(actually separate components\)
-  * one to deal with writes \(updates\)
-  * one to deal with reads
 * commands either produces events, throws error or nothing happens
 
 * queries only return data, free from side effects
 
-* separated storage, optimized for each side
+* CQRS separates commands \(performing actions\) from queries that return data
 
-* event updates consumed by all consumers
+  * separates components that read and write to the permanent store
 
-* event handled only once: command
+  * separates models \(actually separate components\)
 
-* there's always a contract
+    * one to deal with writes \(updates\)
+
+    * one to deal with reads
+
+  * separates storage, optimized for each side
+
+* CQRS's separation of concerns aims to
+
+  * simplify the system \(complex means "braided together", hence decoupling simplifies things :p\)
+
+  * allow each to scale independently: very useful to scale the read side more
+
+* read side
+
+  * listens to events published from the write side, projects those events down as changes \(i.e., commands!\) to the local model and allow queries to be made on that model
+
+  * make the cost of correlating model data \(i.e., JOIN\) from being per-read to being per-write
+
+  * a query on a read side is just a straight SELECT, because data is already in the shape the client wants
 
 ## Event design and catalog
 
@@ -152,7 +202,8 @@ The catalog should allow to answer the following questions for each event type:
 
 * what is the unique name of the event?
 * what is the meaning/utility of the event?
-* what is the name of the corresponding topic? 
+* what is the name of the corresponding aggregate/aggregate root?
+* what is the name of the corresponding topic?
 * which components publish that event and when/why?
 * what components may require the ability to subscribe/react to the event?
 * what data/metadata must be included with this event type?
