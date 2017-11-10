@@ -35,15 +35,24 @@ EDA heavily relies on Domain-Driven Design \(DDD\) principles, thus read this fi
 
 * commands
   * request to perform something in the system
+    * commands either produce events, throw error or nothing happens
   * immutable \(a request is a request, it shouldn't be changed\)
-  * may be rejected
+  * may be rejected or accepted
+  * need validation
+
+* command handler
+  * validates commands
+  * when allowed/accepted, commands modify the system state and 0..n events are be generated \(1 is common\)
+  * command handlers contain logic
+    * validation of structure, values, domain/business rules
+    * security, auditing, ...
+
 * events
   * facts
   * represent changes _that have already occurred_ in the system
   * should include or reference enough context and metadata so that subscribers receiving the events
   * immutable \(just like the past, you can't change it\)
-  * cannot be deleted.
-  * 
+  * cannot be deleted
 * event publisher \(aka generators, sources, emitters\)
   * detects state changes
   * gathers the necessary information to describe the event
@@ -55,6 +64,7 @@ EDA heavily relies on Domain-Driven Design \(DDD\) principles, thus read this fi
   * execute the necessary business logic and actions for the rest of the system to react to the event
   * have no dependencies or expectations on the event sources
 * event mediator
+
   * provide the mechanism to transfer events from the publishers to the subscribers
   * allows subscribers to register for event types
   * receives events from publishers and alerts the relevant subscribers
@@ -64,10 +74,6 @@ EDA heavily relies on Domain-Driven Design \(DDD\) principles, thus read this fi
     * add security, compliance, etc
     * provide optimizations & load balancing
 
-* command handlers
-  * validate the commands
-  * when allowed/accepted, commands modify the system state and 0..n events are be generated \(1 is common\)
-  * command handlers contain logic \(e.g., validation, security, auditing, ...\)
 * saga \(aka process manager\)
   * component that reacts to domain events in a cross-aggregate, eventually consistent manner \(time can also be a trigger\)
   * sagas are sometimes purely reactive and sometime represent workflows
@@ -158,6 +164,7 @@ EDA heavily relies on Domain-Driven Design \(DDD\) principles, thus read this fi
     * one advice: avoid business logic between events and their storage in the log \(otherwise versioning becomes an issue\)
     * upgrading events can be done by both the write and read sides which can upgrade events
       * if an event can't be upgraded it probably means that it's a completely different event
+    * very important to design & document the event taxonomy \(event catalog\)
 * what to store?
   * commands \(aka input event\)
     * buy 15 widgets \(captures business semantics\)
@@ -187,7 +194,6 @@ EDA heavily relies on Domain-Driven Design \(DDD\) principles, thus read this fi
 
 ### CQRS \(Command Query Responsibility Segregation\)
 
-* commands either produce events, throw error or nothing happens
 * CQRS separates commands \(performing actions\) from queries that return data
   * separates components that read and write to the permanent store
   * separates models \(actually separate components\)
@@ -229,6 +235,33 @@ The catalog should allow to answer the following questions for each event type:
 * security information
   * who can publish that event \(roles / attributes / constraints\)
 
+At runtime the following information is also needed for each event:
+
+* eventId
+* aggregateId
+* sequenceNumber: sequence number in the history of a particular stream
+* creationTimestamp: transaction start time; the same for all events committed in one transaction
+* correlationId
+* eventData
+
+With the above, it's easy to have an interface for going through the event store:
+
+```
+public interface EventStoreReader {
+    List<Event> getEventsForStream(UUID streamId, long afterSequence, int limit);
+    List<Event> getEventsForAllStreams(long afterEventId, int limit);
+    Optional<Long> getLastEventId();
+}
+```
+
+## Command design and catalog
+
+* subjectId
+* userId
+* creationTimestamp
+* commandId
+* commandData
+
 ## Runtime concerns
 
 * eventual consistency \(!\)
@@ -242,30 +275,46 @@ The catalog should allow to answer the following questions for each event type:
   * take advantage of event sourcing \(i.e., reapply event history / snapshots\) to put back disconnected/offline clients to an up-to-date / correct state
 * event mediation
 
-## Design idea for a platform using Event Sourcing
+## Design ideas \(WIP\)
 
-Goal: design a highly available, horizontally scalable with loose coupling between the components.
+Goal: design a highly available, horizontally scalable system with loose coupling between its components.
 
 MUST: leverage functional reactive programming \(FRP\). Java/Kotin: Reactor, JS/TS: RxJS...
 
 ### Components
 
-#### Back-end
+#### Back-end platform
 
-Microservice architecture with at least the following components:
+Micro-service architecture with at least the following components:
 
 * a platform-wide \(i.e., global\) highly available message broker _with_ streaming support \(e.g., Kafka\)
   * all relevant platform events transit through it
-* 1-n microservices
-  * bounded context \(e.g., payments subsystem, user profile subsystem, ...\)
-* a "server event mediator" embedded in each microservice
-  * dispatches events within the microservice for consumption/reaction
-* a "server event publisher" embedded in each microservice
-  * publishes events to the message broker
-* a platform-wide "back-end event mediator"
+
+* a platform-wide "client gateway"
+  * all clients interact with it: queries, mutations, subscriptions
+  * exposes REST/GraphQL APIs
+  * generates commands for the platform to consume
+    * sent to a specific topic: "commands"
+  * handles subscriptions \(e.g., client interested in X\), generates subscription commands
+    * sent to a specific topic: "subscriptions"
+    * returns the subscription information to the client
+* a platform-wide "subscription manager"
+  * listens to "subscriptions" topic
+  * creates subscriptions for specific pieces of data and pushes data as it becomes available to all interested clients
+* * a platform-wide "back-end event mediator"
   * responsible for orchestration between event publishers and subscribers
+
 * a platform-wide "back-end event manager"
   * responsible for long-term storage \(event sourcing and creation & management of snapshots\)
+* 1  -n micro-services
+  * one per bounded context \(e.g., payments subsystem, user profile subsystem, ...\)
+  * a "server event mediator" embedded in each micro-service
+    * dispatches events within the micro-service for consumption/reaction
+  * a "server event publisher" embedded in each micro-service
+    * publishes events to the message broker
+* chaos monkey microservice
+  * killer in the house
+  * spawn at random times and kill stuff on the platform
 
 Easy to add analytics
 
@@ -281,15 +330,18 @@ Easy to add analytics
 
 ### Client Layers
 
-If we take the example of a Web or node.js based application, the structure could be as follows.
+The structure could be as follows.
 
 * UI: dumb + smart components and their controllers
+
 * Services
   * hold business logic
   * interact with lower layers
-* Repositories
-  * REST and/or GraphQL client
+* Repositories \(interact with the back-end\)
+  * e.g., REST and/or GraphQL client
+  * create command objects based on requests
   * leverage WebSockets and/or Server-Sent Events
+
 * Event Handlers
   * contains the event mediator
   * contains the event publisher
@@ -350,18 +402,6 @@ The benefit if we use FSMs is that once an event occurs, we can pass it to the F
 * expand the roles of the mediator?
   * register event subscriptions
   * handle publishing events
-* add a chaos monkey component: killer in the house
-* evolution of the events and associated payloads?
-* overlap/separation between platform events and events clients may/should know about?
-* microservices: send events to kafka directly or go through the platform-wide event mediator?
-* clients: send events to the platform-wide event mediator or to another specific microservice instead?
-* ideally clients should have a single interlocutor \(graphql idea\) but that's creating a spof
-  * related question about subscriptions
-* how to handle subscriptions to events?
-  * from microservices
-  * from clientshow to handle up-to-dateness of clients?
-* leverage blockchains? tamper-proofness / auditing / ...
-* auditing: what information to keep along with events for audit trails?
 
 # Links
 
