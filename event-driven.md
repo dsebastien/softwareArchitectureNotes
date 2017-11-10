@@ -29,14 +29,21 @@ With EDA we consider that the events are the main source of truth \(thus are fir
 
 With EDA, events are kept preciously \(cfr Event Sourcing below\) as they represent everything that has ever actually happened in the system.
 
-Heavily relies on Domain-Driven Design \(DDD\) principles, thus read this first: [https://www.gitbook.com/book/dsebastien/domain-driven-design-notes](https://www.gitbook.com/book/dsebastien/domain-driven-design-notes)
+EDA heavily relies on Domain-Driven Design \(DDD\) principles, thus read this first: [https://www.gitbook.com/book/dsebastien/domain-driven-design-notes](https://www.gitbook.com/book/dsebastien/domain-driven-design-notes)
 
 ## Main concepts
 
+* commands
+  * request to perform something in the system
+  * immutable \(a request is a request, it shouldn't be changed\)
+  * may be rejected
 * events
-  * represent a change _that has already occurred_ in the system
+  * facts
+  * represent changes _that have already occurred_ in the system
   * should include or reference enough context and metadata so that subscribers receiving the events
   * immutable \(just like the past, you can't change it\)
+  * cannot be deleted.
+  * 
 * event publisher \(aka generators, sources, emitters\)
   * detects state changes
   * gathers the necessary information to describe the event
@@ -56,10 +63,7 @@ Heavily relies on Domain-Driven Design \(DDD\) principles, thus read this first:
     * aggregate events
     * add security, compliance, etc
     * provide optimizations & load balancing
-* commands
-  * request to perform something in the system
-  * may be rejected
-  * immutable \(a request is a request, it shouldn't be changed\)
+
 * command handlers
   * validate the commands
   * when allowed/accepted, commands modify the system state and 0..n events are be generated \(1 is common\)
@@ -116,9 +120,13 @@ Heavily relies on Domain-Driven Design \(DDD\) principles, thus read this first:
   * version control system
   * ledge in a financial system
 * benefits
-  * audit
+  * simple
+  * flexible \(easy data migrations\)
+  * performant \(caching, scaling, ...\)
+  * audit trail
     * the log contains everything that's ever happened in the system \(true history\)
     * provides natural audit and traceability
+  * intent trail
   * debugging
     * take a copy of the system, feed it with events and observe what happens
     * time travel debugging
@@ -130,15 +138,19 @@ Heavily relies on Domain-Driven Design \(DDD\) principles, thus read this first:
     * since all events are kept, it's it's easy to exploit them
   * persistence of events is very easy, straightforward and efficient \(append-only\)
   * testing is clear: use exclusively the commands, events and exceptions
+  * extra business value: BI, ML, temporal queries
 * drawbacks
   * unfamiliar
   * external systems
     * responses of external systems must also be put into events so that the full history is kept
-  * event schema
+  * design needed for domain events
+    * event schema is a must
   * identifiers
   * asynchrony
     * not necessarily needed with an event source system
     * can be nice because it improved responsiveness, but adds complexity
+  * not trivial to query: build a snapshot to be able to query
+  * uses more space
   * versioning
     * can get complicated
     * if the application state schema changes, can the log still be fully replayed?
@@ -174,17 +186,19 @@ Heavily relies on Domain-Driven Design \(DDD\) principles, thus read this first:
   * using Protocol Buffers or Avro also help with interoperability
 
 ### CQRS \(Command Query Responsibility Segregation\)
+
 * commands either produce events, throw error or nothing happens
 * CQRS separates commands \(performing actions\) from queries that return data
   * separates components that read and write to the permanent store
   * separates models \(actually separate components\)
     * one to deal with writes \(updates\)
-    * one to deal with reads (only return data, free from side-effects)
+    * one to deal with reads \(only return data, free from side-effects\)
   * separates storage, optimized for each side
 * CQRS's separation of concerns aims to
   * simplify the system \(complex means "braided together", hence decoupling simplifies things :p\)
   * allow each to scale independently: very useful to scale the read side more
 * read side
+
   * listens to events published from the write side, projects those events down as changes \(i.e., commands!\) to the local model and allow queries to be made on that model
   * make the cost of correlating model data \(i.e., JOIN\) from being per-read to being per-write
   * a query on a read side is just a straight SELECT, because data is already in the shape the client wants
