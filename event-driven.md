@@ -34,6 +34,7 @@ EDA heavily relies on Domain-Driven Design \(DDD\) principles, thus read this fi
 ## Main concepts
 
 * commands
+
   * request to perform something in the system
     * commands either produce events, throw error or nothing happens
   * immutable \(a request is a request, it shouldn't be changed\)
@@ -41,6 +42,7 @@ EDA heavily relies on Domain-Driven Design \(DDD\) principles, thus read this fi
   * need validation
 
 * command handler
+
   * validates commands
   * when allowed/accepted, commands modify the system state and 0..n events are be generated \(1 is common\)
   * command handlers contain logic
@@ -48,11 +50,13 @@ EDA heavily relies on Domain-Driven Design \(DDD\) principles, thus read this fi
     * security, auditing, ...
 
 * events
+
   * facts
   * represent changes _that have already occurred_ in the system
   * should include or reference enough context and metadata so that subscribers receiving the events
   * immutable \(just like the past, you can't change it\)
   * cannot be deleted
+
 * event publisher \(aka generators, sources, emitters\)
   * detects state changes
   * gathers the necessary information to describe the event
@@ -75,6 +79,7 @@ EDA heavily relies on Domain-Driven Design \(DDD\) principles, thus read this fi
     * provide optimizations & load balancing
 
 * saga \(aka process manager\)
+
   * component that reacts to domain events in a cross-aggregate, eventually consistent manner \(time can also be a trigger\)
   * sagas are sometimes purely reactive and sometime represent workflows
   * a saga is a state machine driven forward by incoming events \(which may come from different aggregates\)
@@ -285,91 +290,103 @@ MUST: leverage functional reactive programming \(FRP\). Java/Kotin: Reactor, JS/
 
 #### Back-end platform
 
-Micro-service architecture with at least the following components:
+Micro-service architecture with at least the following components.
 
-* a platform-wide \(i.e., global\) highly available message broker _with_ streaming support \(e.g., Kafka\)
-  * all relevant platform events transit through it
+##### Platform-wide message broker \(aka event mediator\)
 
-* a platform-wide "client gateway"
-  * all clients interact with it: queries, mutations, subscriptions
-  * exposes REST/GraphQL APIs
-  * generates commands for the platform to consume
-    * sent to a specific topic: "commands"
-  * handles subscriptions \(e.g., client interested in X\), generates subscription commands
-    * sent to a specific topic: "subscriptions"
-    * returns the subscription information to the client
-* a platform-wide "subscription manager"
-  * listens to "subscriptions" topic
-  * creates subscriptions for specific pieces of data and pushes data as it becomes available to all interested clients
-* * a platform-wide "back-end event mediator"
-  * responsible for orchestration between event publishers and subscribers
+Example: Apache Kafka
 
-* a platform-wide "back-end event manager"
-  * responsible for long-term storage \(event sourcing and creation & management of snapshots\)
-* 1  -n micro-services
-  * one per bounded context \(e.g., payments subsystem, user profile subsystem, ...\)
-  * a "server event mediator" embedded in each micro-service
-    * dispatches events within the micro-service for consumption/reaction
-  * a "server event publisher" embedded in each micro-service
-    * publishes events to the message broker
-* chaos monkey microservice
-  * killer in the house
-  * spawn at random times and kill stuff on the platform
+All relevant "events" transit through it.
 
-Easy to add analytics
+##### A platform-wide "client gateway"
 
-* real time: subscribe to topics
-* delayed: leverage the long-term storage & snapshots
+All clients interact with it: queries, mutations, subscriptions
 
-#### Clients
+Exposes REST/GraphQL APIs
 
-* a "client event mediator" embedded in each client
-  * dispatches events within the client for consumption/reaction
-* a "client event publisher" embedded in each client
-  * e.g., GraphQL calls or WebSocket
+Handles subscriptions \(e.g., client interested in X\) \(**TODO**\)
 
-### Client Layers
+##### A platform-wide "subscription manager" \(TODO\)
+
+...
+
+##### 1-n micro-services
+
+One per bounded context \(e.g., payments subsystem, user profile subsystem, ...\)
+
+##### A platform-wide Chaos Monkey
+
+Killer in the house.
+
+Spawned randomly and breaks things.
+
+##### Analytics micro-service
+
+Collect information about the platform
+
+### Clients & Client Layers
 
 The structure could be as follows.
 
 * UI: dumb + smart components and their controllers
 
 * Services
+
   * hold business logic
   * interact with lower layers
+
 * Repositories \(interact with the back-end\)
+
   * e.g., REST and/or GraphQL client
   * create command objects based on requests
   * leverage WebSockets and/or Server-Sent Events
 
 * Event Handlers
-  * contains the event mediator
-  * contains the event publisher
 
-### Platform microservices layers
+  * contains the event mediator: dispatches events within the client for consumption/reaction
+  * contains the event publisher: handles REST/GraphQL or WebSocket calls
+
+### Platform command microservices layers
 
 As stated, the whole platform will consist of 1-n microservices.
 
 Let's consider the layers of a typical Java microservice:
 
-* GraphQL and/or REST layer
+* optional: GraphQL and/or REST layer
+  * validates input then delegates to the service layer
+* Server Event/Command Mediator \(aka event handler\)
+  * listens to specific topics and pushes incoming events/commands to the service layer
+  * publishes events to the message broker
+* Aggregate / Aggregate Root
+  * handle commands and generate events
+  * apply events
+  * take care of
+    * authorization
+    * transaction management
+    * ...
 * Services
-  * hold business logic
-  * take care of transaction management
-  * take care of authorization
-  * ...
+  * responsible for handling requests
+  * either create a new aggregate
+  * or update an existing one
+
+* Domain model
+
 * Repositories
   * handle interactions with data sources/stores
+  * handle snapshots of the application state
 
 ### Flow of events between components
 
 #### Clients
 
-Communicate directly with 1-n back-ends through REST and/or GraphQL calls \(using queries & mutations\).
+Communicate directly with
+
+* option 1: 1-n back-ends
+* option 2: only the platform's client gateway
+
+In both cases, communication occurs through REST and/or GraphQL calls \(using queries & mutations\)
 
 When doing so they trigger \(directly or indirectly\) the creation of events on the back-end platform.
-
-In some cases clients will directly create the events and publish them using the Client Event Publisher. Each contacted back-end hit by calls decides when to generate events for the rest of the platform \(cfr next section\).
 
 When clients receive events for topics they've subscribed to, their Client Event Mediator will take care of reactively handling the event.
 
@@ -377,11 +394,13 @@ Flow in that case: Client Event Mediator -&gt; Service Layer \| other internal s
 
 #### Platform microservices
 
-Activity of microservices may be triggered by different means: client requests \(e.g., GraphQL queries and/or REST calls\), scheduled activities \(in-app triggers, external triggers, ...\), event notifications, ...
+Activity of micro-services may be triggered by different means: client requests \(e.g., GraphQL queries and/or REST calls\), scheduled activities \(in-app triggers, external triggers, ...\), event notifications, ...
 
-During activities \(e.g., client has submitted new data\), the microservice's service layer decides if events need to be created. When it is the case, the event \(value-object\) is created and passed to the Server Event Publisher which takes care of sending the event to the message broker \(e.g., using the Kafka client\).
+During activities \(e.g., client has submitted new data\), the service layer decides if a new aggregate needs to be created or if an existing one should be updated.
 
-Flow in this case: Service Layer -&gt; Server Event Publisher -&gt; Message Broker
+Afterwards, the aggregate decides if events need to be created. When it is the case, the event is created and passed to the Server Event Publisher which takes care of sending the event to the message broker \(e.g., using the Kafka client\).
+
+Flow in this case: Aggregate -&gt; Server Event Publisher -&gt; Message Broker
 
 Microservices may also subscribe to some topics. When it receives events, its Server Event Mediator will take care of reactively handling these \(i.e., letting them flow for consumption\).
 
@@ -399,13 +418,20 @@ The benefit if we use FSMs is that once an event occurs, we can pass it to the F
 
 ### Open Questions / TODO
 
-* expand the roles of the mediator?
-  * register event subscriptions
-  * handle publishing events
+* construction of the read model
+* snapshots handling
+* subscriptions handling
+  * option 1: platform's client gateway is stateful
+    * it delegates data fetching to the subscription manager but is the one having a long-standing open connection with the subscribed client\(s\)
+    * plays with commands and listens to specific subscription-data events on a dedicated topic \(e.g., observe subscription-data events that match known clients\)
+    * problem: clean-up of inactive clients, stop data generation, etc
+  * option 2: platform's client gateway is stateless
+    * point the client to an instance of the subscription manager and let that one handle things itself
 
 # Links
 
 * [https://en.wikipedia.org/wiki/Publish–subscribe\_pattern](https://en.wikipedia.org/wiki/Publish–subscribe_pattern)
-
+* [http://eventuate.io/](http://eventuate.io/)
+* 
 
 
