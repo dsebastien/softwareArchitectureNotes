@@ -223,7 +223,7 @@ EDA heavily relies on Domain-Driven Design \(DDD\) principles, thus read this fi
 
 * event handled only once: command
 
-* there's always a contract
+* CQRS allows to have different read models of different types \(e.g., relational DB, key-value store, ...\)
 
 ## Event design and catalog
 
