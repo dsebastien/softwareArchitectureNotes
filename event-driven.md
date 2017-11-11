@@ -65,10 +65,12 @@ EDA heavily relies on Domain-Driven Design \(DDD\) principles, thus read this fi
   * should have no knowledge, dependencies or expectations on event subscribers
 
 * event subscriber \(aka handlers, sinks, consumers\)
+
   * register with an event mediator to receive an alert when the mediator receives a particular event type \(aka event "topic"\)
     * i.e., please push values to me regarding "x"
   * execute the necessary business logic and actions for the rest of the system to react to the event
   * have no dependencies or expectations on the event sources
+
 * event mediator
 
   * provide the mechanism to transfer events from the publishers to the subscribers
@@ -145,6 +147,7 @@ EDA heavily relies on Domain-Driven Design \(DDD\) principles, thus read this fi
     * time travel debugging
   * alternative state
   * memory image
+    * load the events at startup
     * keep the application state in memory
     * if the system crashes, quickly rebuild from the log \(or from snapshots\)
   * ease to extend the system naturally
@@ -300,6 +303,10 @@ Example: Apache Kafka
 
 All relevant "events" transit through it.
 
+Using a system like Kafka and its transactions frees us from worries of failures and retries in the distributed world.
+
+Kafka is built for big data, it has production workloads with over a hundred TB :\)
+
 ##### A platform-wide "client gateway"
 
 All clients interact with it: queries, mutations, subscriptions
@@ -420,9 +427,30 @@ When we process each event, the concerned parts of the system may change their "
 
 The benefit if we use FSMs is that once an event occurs, we can pass it to the FSM and see if it changed its state. Once the state changes, new events are generated and dispatched. Another benefit is that FSMs are easy to describe, encapsulate the logic, ...
 
+### Last-Versioned pattern
+
+A useful pattern with Event Sourcing is to hold events twice:
+
+* once in a retention-based topic
+* once in a compacted topic
+
+The retention-based topic will be larger as it holds the version history of your data.
+
+The compacted topic is just the "latest" view and will be smaller, so it's faster to load into a Memory Image or state store \(e.g., DB\).
+
+#### Apache Samza can help
+
+With Samza you write jobs that consume the events in a log and build cached views of the data. When a job first starts up, it can build up its state by consuming all the events in the log. Then, on an ongoing basis, whenever a new event appears in the stream, it can update the view accordingly. The view can be any existing database or index. Samza just provides the framework for processing the stream.
+
+Anyone who wants to read data can now query the materialized views created and maintained by Samza. Those views are just databases, indexes or caches and you can send read-only requests to them in the usual way.
+
+To write, you write to the event log and there is an explicit transformation process which takes the data on the log and applies it to the materialized views.
+
 ### Open Questions / TODO
 
 * construction of the read model
+  * redis?
+  * mysql or other?
 * snapshots handling
 * subscriptions handling
   * option 1: platform's client gateway is stateful
