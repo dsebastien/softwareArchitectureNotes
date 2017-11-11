@@ -58,10 +58,12 @@ EDA heavily relies on Domain-Driven Design \(DDD\) principles, thus read this fi
   * cannot be deleted
 
 * event publisher \(aka generators, sources, emitters\)
+
   * detects state changes
   * gathers the necessary information to describe the event
   * transfers the event to the event mediator
   * should have no knowledge, dependencies or expectations on event subscribers
+
 * event subscriber \(aka handlers, sinks, consumers\)
   * register with an event mediator to receive an alert when the mediator receives a particular event type \(aka event "topic"\)
     * i.e., please push values to me regarding "x"
@@ -365,6 +367,7 @@ Let's consider the layers of a typical Java microservice:
     * transaction management
     * ...
 * Services
+
   * responsible for handling requests
   * either create a new aggregate
   * or update an existing one
@@ -372,6 +375,7 @@ Let's consider the layers of a typical Java microservice:
 * Domain model
 
 * Repositories
+
   * handle interactions with data sources/stores
   * handle snapshots of the application state
 
@@ -408,9 +412,9 @@ Flow in this case: Server Event Mediator -&gt; Service Layer -&gt; ...
 
 ### State Machines
 
-When clients interact with the back-end \(whatever microservice\), they issue "commands".
+When clients interact with the back-end \(whatever micro-service\), they issue "commands".
 
-When a command is received, it triggers the creation of an event. That event is stored and processed.
+When a command is received, if accepted, it triggers the creation of an event. That event is stored and processed.
 
 When we process each event, the concerned parts of the system may change their "state" we can represent all the possible state of some sub-system as a Finite State Machine \(FSM\). Basically, events are what allows the FSM to go from a state to another.
 
