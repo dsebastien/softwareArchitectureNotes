@@ -34,7 +34,7 @@ From GraphQL specs: "GraphQL is unapologetically driven by the requirements of v
 * time spent maintaining many versioned endpoints
 * client defining the response \(i.e., content negociation\) is rare in practice
 * REST is loosely specified
-* comparison / analysis: https://apihandyman.io/and-graphql-for-all-a-few-things-to-think-about-before-blindly-dumping-rest-for-graphql/
+* comparison / analysis: [https://apihandyman.io/and-graphql-for-all-a-few-things-to-think-about-before-blindly-dumping-rest-for-graphql/](https://apihandyman.io/and-graphql-for-all-a-few-things-to-think-about-before-blindly-dumping-rest-for-graphql/)
 
 ## Benefits
 
@@ -148,6 +148,24 @@ By default, all fields are nullable
   * think like the client
   * yagni
   * second time around problem
+
+## Subscriptions
+
+With event-based subscriptions, the client tells the server that is cares about or one more events. Whenever these events trigger, the server notifies the client. This model requires the server to identify a set of well-known events and how to raise/propagate them, ahead of time.
+
+Subscriptions require server-side state, such as which subscriptions are active, what events they are listening to and the mapping of client connections to subscriptions.
+
+Types:
+
+* fixed-payload subscriptions: payloads are defined by the server-side ahead of time \(fixed\)
+* zero-payload subscriptions: sends empty events to the client where it triggers a data fetch
+* data-transformation pipelines: for cases where data payloads differ between subscribers
+
+Alternative: live queries. The client issues a standard query. Whenever the answer to the query changes, the server pushes the new data to the client. The different is that live queries do not depend on the notion of events.
+
+With GraphQL subscriptions, the client sends the server a GraphQL query and query variables. The server maps these inputs to an event stream and executes the query when the events trigger.
+
+GraphQL subscriptions produces privacy-aware, right-sized payloads without pushing business logic to the event/messaging layer.
 
 
 
