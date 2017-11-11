@@ -8,4 +8,5 @@
 * [GraphQL](graphql.md)
 * [Docker](docker.md)
 * [Concerns](concerns.md)
+* [Apache Kafka](apache-kafka.md)
 

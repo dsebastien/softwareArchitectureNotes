@@ -299,13 +299,9 @@ Micro-service architecture with at least the following components.
 
 ##### Platform-wide message broker \(aka event mediator\)
 
-Example: Apache Kafka
+Example: [Apache Kafka](/apache-kafka.md)
 
 All relevant "events" transit through it.
-
-Using a system like Kafka and its transactions frees us from worries of failures and retries in the distributed world.
-
-Kafka is built for big data, it has production workloads with over a hundred TB :\)
 
 ##### A platform-wide "client gateway"
 
@@ -462,8 +458,14 @@ To write, you write to the event log and there is an explicit transformation pro
 
 # Links
 
-* [https://en.wikipedia.org/wiki/Publish–subscribe\_pattern](https://en.wikipedia.org/wiki/Publish–subscribe_pattern)
+* [https://martinfowler.com/eaaDev/EventSourcing.html](https://martinfowler.com/eaaDev/EventSourcing.html)
+
 * [http://eventuate.io/](http://eventuate.io/)
-* 
+* [http://blog.xebia.fr/2017/01/16/event-sourcing-comprendre-les-bases-dun-systeme-evenementiel/](http://blog.xebia.fr/2017/01/16/event-sourcing-comprendre-les-bases-dun-systeme-evenementiel/)
+
+* [https://github.com/cer/event-sourcing-examples](https://github.com/cer/event-sourcing-examples)
+
+* [https://en.wikipedia.org/wiki/Publish–subscribe\_pattern](https://www.gitbook.com/book/dsebastien/software-architecture-notes/edit#)
+
 
 
