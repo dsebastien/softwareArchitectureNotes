@@ -49,7 +49,7 @@ EDA heavily relies on Domain-Driven Design \(DDD\) principles, thus read this fi
     * validation of structure, values, domain/business rules
     * security, auditing, ...
 
-* events
+* events \(aka domain events\)
 
   * facts
   * represent changes _that have already occurred_ in the system
@@ -461,6 +461,7 @@ To write, you write to the event log and there is an explicit transformation pro
 * [https://martinfowler.com/eaaDev/EventSourcing.html](https://martinfowler.com/eaaDev/EventSourcing.html)
 
 * [http://eventuate.io/](http://eventuate.io/)
+
 * [http://blog.xebia.fr/2017/01/16/event-sourcing-comprendre-les-bases-dun-systeme-evenementiel/](http://blog.xebia.fr/2017/01/16/event-sourcing-comprendre-les-bases-dun-systeme-evenementiel/)
 
 * [https://github.com/cer/event-sourcing-examples](https://github.com/cer/event-sourcing-examples)
