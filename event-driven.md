@@ -89,6 +89,8 @@ EDA heavily relies on Domain-Driven Design \(DDD\) principles, thus read this fi
   * a saga is a state machine driven forward by incoming events \(which may come from different aggregates\)
     * some states will have side-effects \(e.g., sending commands, talking to external Web Services, sending e-mails, ...\)
   * sagas are doing things that individual aggregates can't do
+  * sagas are strategies to handle long-running business transactions without using distributed transactions
+    * useful for example for coordination/communication between multiple aggregates
 
 ## High level approaches
 
