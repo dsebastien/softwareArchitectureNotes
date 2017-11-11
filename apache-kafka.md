@@ -166,6 +166,13 @@ Monitor broker performance and terminate poorly performing brokers.
 
 Reference video: [https://www.youtube.com/watch?v=e1VEEtAvQ9E](https://www.youtube.com/watch?v=e1VEEtAvQ9E)
 
+## Security
+
+* Require TLS authentication for client/broker and inter-broker communication
+* Encrypt network traffic via TLS
+* Perform authorization via access control lists \(ACLs\)
+* Network segmentation should be used to restrict access to ZooKeeper
+
 ## Links
 
 * [https://kafka.apache.org/uses](https://kafka.apache.org/uses)
