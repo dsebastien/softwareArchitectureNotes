@@ -6,4 +6,6 @@
 * [Push](push.md)
 * [Microservices](microservices.md)
 * [GraphQL](graphql.md)
+* [Docker](docker.md)
+* [Concerns](concerns.md)
 
