@@ -56,6 +56,7 @@ EDA heavily relies on Domain-Driven Design \(DDD\) principles, thus read this fi
   * should include or reference enough context and metadata so that subscribers receiving the events
   * immutable \(just like the past, you can't change it\)
   * cannot be deleted
+  * idempotency is important for long-term safety of the system \(vs eventual consistency\)
 
 * event publisher \(aka generators, sources, emitters\)
 
