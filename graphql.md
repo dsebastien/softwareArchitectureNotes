@@ -38,7 +38,7 @@ From GraphQL specs: "GraphQL is unapologetically driven by the requirements of v
 
 ## Benefits
 
-* make multiple queries at once
+* make multiple operations at once \(e.g., n queries, m mutations, ...\)
 * one API in hiding others if needed
   * useful analogy: "If you want to go and buy things from 3 different stores\)
     * with REST: make 3 different calls \(1 towards each store's API\)
@@ -64,14 +64,15 @@ From GraphQL specs: "GraphQL is unapologetically driven by the requirements of v
 
   * they define the response
     * each call fetches exactly what is needed, no less, no more
+    * avoids over-fetching and under-fetching
   * including what they get after a mutation \(i.e., create, update or delete operation\)
   * responsibility swapped to the client side
 
 ## Operation types
 
-* query
-* mutation
-* subscription
+* query: retrieve data
+* mutation: modify data
+* subscription: get notified of data changes
 
 ## Field Types
 
@@ -83,7 +84,168 @@ From GraphQL specs: "GraphQL is unapologetically driven by the requirements of v
 * Enum
 * Object
 
-By default, all fields are nullable
+By default, all fields are nullable.
+
+## Field aliasing
+
+Possible to define aliases for fields.
+
+GraphQL uses the operation name as the returned objects name, so if the client wants they can also define an alias for it.
+
+Example:
+
+```
+{
+    my_product: product(id: 3) {
+        id
+        name
+        diameter: cymbal_size
+    }
+}
+```
+
+Retrieved data:
+
+```
+{
+    "data": {
+        "my_product": {
+            "id": "3",
+            "name": "Blablabla",
+            "diameter": "10cm"
+        }
+    }
+}
+```
+
+## Fragments
+
+We can also define aliases for returned objects:
+
+```
+query {
+    drumsets: products(product_category_id: 1) {
+        id
+        name
+        size
+    }
+    
+    cymbals: products(product_category_id: 2) {
+        id
+        name
+        price
+    }
+}
+```
+
+Above we repeat common fields \(i.e., id & name\). To avoid repetition, we can define fragments:
+
+```
+query {
+    drumsets: products(product_category_id: 1) {
+        ...ProductCommonFields
+        size
+    }
+    
+    cymbals: products(product_category_id: 2) {
+        ...ProductCommonFields
+        price
+    }
+}
+
+fragment ProductCommonFields on Product {
+    id
+    name
+}
+```
+
+## Variables
+
+Example:
+
+```
+query($clientId: Int!) {
+    client(id: $clientId) {
+        ...
+    }
+    
+    purchases(client_id: $clientId) {
+        ...
+    }
+}
+```
+
+## Mutations
+
+Creation: provide the input to the operation then describe the shape of the response \(selection set\):
+
+```
+mutation {
+    create_client (
+        firstName: "John"
+        lastName: "Lennon"
+    ) {
+        id
+        firstName
+        lastName
+    }
+}
+```
+
+## Introspection
+
+Ability to query the GraphQL schema to view all details \(e.g., available queries and mutations, arguments, ...\):
+
+```
+{
+    __schema {
+        queryType {
+            name
+            fields {
+                name
+            }
+        }
+        
+        mutationType {
+            name
+            fields {
+                name
+                args {
+                    name
+                }
+            }
+    }
+}
+```
+
+## Examples
+
+Retrieve products matching two criteria and for each result, return only the listed fields:
+
+```
+query {
+    products(product_category_id: 1, order: "price DESC") {
+        name
+        shell_size
+        manufacturer
+        price
+    }
+}
+```
+
+Fetch relations:
+
+```
+query {
+    product_categories {
+        name
+        products {
+            name
+            price
+        }
+    }
+}
+```
 
 ## Best practices
 
