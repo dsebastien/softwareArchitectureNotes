@@ -205,6 +205,8 @@ EDA heavily relies on Domain-Driven Design \(DDD\) principles, thus read this fi
 
   * using Protocol Buffers or Avro also help with interoperability
 
+  * cfr "payload formats" section
+
 ### CQRS \(Command Query Responsibility Segregation\)
 
 * CQRS separates commands \(performing actions\) from queries that return data
@@ -267,6 +269,27 @@ public interface EventStoreReader {
 }
 ```
 
+OpenAPI v3 includes WebHooks: https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md\#callbackObject
+
+Apart from that there's no standard for defining/documenting the definition of event types, payloads, topic structures and endpoints in a holistic manner.
+
+## Event payload formats
+
+When defining event payloads, we must choose whether to use a text or binary format.
+
+The choice impacts performance & payload size of binary formats with readability and ease of use of text-base formats.
+
+Binary:
+
+* Apache Avro
+* Protocol Buffers
+* BSON
+
+Text-based:
+
+* JSON
+* XML
+
 ## Command design and catalog
 
 * subjectId
@@ -287,6 +310,45 @@ public interface EventStoreReader {
 * offline subscribers
   * take advantage of event sourcing \(i.e., reapply event history / snapshots\) to put back disconnected/offline clients to an up-to-date / correct state
 * event mediation
+
+## Communication Flows
+
+### Logical Event Flow
+
+Event producer -&gt; event\(s\) -&gt; event consumer\(s\)
+
+### Conversation Flow
+
+Event producer -&gt; event\(s\) -&gt; topic &lt;- subscribe &lt;- event consumers \(receive events\)
+
+### Technical Flow
+
+* Event producer -&gt; event
+* Event broker -&gt; ACK/NACK -&gt; event producer
+* Event consumer -&gt; subscribe -&gt; event broker
+* Event -&gt; Event broker -&gt; event consumer
+* Event consumer -&gt; ACK/NACK -&gt; event broker
+* ...
+
+## Protocol choices
+
+* HTTP with the WebHook pattern
+* WebSockets
+* MQTT
+* AMQP
+
+Small overview:
+
+| Protocol | Type | Network overhead | Built-in QoS | Authentication |
+| :--- | :--- | :--- | :--- | :--- |
+| HTTP w/ WebHooks | Notification only. Application transport. Transient connections | High/medium \(text or binary and compression supported\) | No | HTTP mechanisms |
+| WebSockets | Bidirectional communication. Persistent connections | Medium \(text or binary\) | No | HTTP mechanisms |
+| MQTT | Bidirectional communication. Persistent connections | Low \(text or binary\). Over TLS, TCP or WebSockets | Basic \(three levels, no flow control\) | User/password or X509 |
+| AMQP | Bidirectional communication. Persistent connections | Medium \(text or binary\) | Advanced \(three levels and flow control\) | TLS with SASL |
+
+## Apache Kafka
+
+* Kafka Connect: tool for scalably and reliably streaming data between Kafka and other data systems
 
 ## Design ideas \(WIP\)
 

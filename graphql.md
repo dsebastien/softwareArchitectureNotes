@@ -167,5 +167,5 @@ With GraphQL subscriptions, the client sends the server a GraphQL query and quer
 
 GraphQL subscriptions produces privacy-aware, right-sized payloads without pushing business logic to the event/messaging layer.
 
-
+The subscription handler is responsible for authc & authz
 
