@@ -5,15 +5,21 @@
 * data access
 * external systems access
 * configuration management
+  * service discovery
+  * configuration stores \(e.g., etcd, zookeeper\)
 * instrumentation
 * monitoring
 * availability
-  * Mean Time To Recover \(MTTR\)
-  * Mean Time Between Failures \(MTBF\)
-  * Mean Time To Detect \(MTTD\)
-  * Availability = MTBF / MTBF + MTTR
+  * terms
+    * Mean Time To Recover \(MTTR\)
+    * Mean Time Between Failures \(MTBF\)
+    * Mean Time To Detect \(MTTD\)
+    * Availability = MTBF / MTBF + MTTR
+  * circuit breaker pattern
 * scalability
 * performance
+  * load balancing
+  * metrics collection
 * exception management
 * security and access management
 * documentation
@@ -21,7 +27,9 @@
 * deployment
   * blue/green
 * testing
+  * A/B testing
 * release practices
+  * blue/green deployment
 * SLAs
 * SLOs
 * KPIs
