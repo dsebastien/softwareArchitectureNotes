@@ -1,5 +1,7 @@
 # Concerns
 
+## List
+
 * data validation
 * logging
 * data access
@@ -33,6 +35,15 @@
 * SLAs
 * SLOs
 * KPIs
+
+## Reading vs Writing
+
+| Writing | Reading |
+| :--- | :--- |
+| Enforcing data integrity | Performing efficient searches and lookups |
+| Providing atomic updates / transactions | Calculate derived values \(sums, ...\) |
+| Facilitating version control \(optimistic concurrency locking\) | Providing multiple views of data |
+| Enforcing write permissions | Enforcing row and column level permissions |
 
 
 
