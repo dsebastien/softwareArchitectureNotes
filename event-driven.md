@@ -269,7 +269,7 @@ public interface EventStoreReader {
 }
 ```
 
-OpenAPI v3 includes WebHooks: https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md\#callbackObject
+OpenAPI v3 includes WebHooks: [https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md\#callbackObject](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#callbackObject)
 
 Apart from that there's no standard for defining/documenting the definition of event types, payloads, topic structures and endpoints in a holistic manner.
 
